@@ -12,7 +12,7 @@ st.set_page_config(
 st.markdown("""
 <style>
 /* --- Force ALL text to black globally --- */
-html, body, [class*="st-"], div, p, span, label, h1, h2, h3, h4, h5, h6 {
+html, body, [class*="st-"], p, span, label, h1, h2, h3, h4, h5, h6 {
     color: black !important;
 }
 </style>
@@ -440,5 +440,6 @@ elif st.session_state.page == "domain_questions":
     page_domain_questions()
 elif st.session_state.page == "result":
     page_result()
+
 
 
