@@ -3,24 +3,40 @@ import streamlit as st
 st.markdown(
     """
     <style>
-    /* Make all question text black */
-    .question-text, h1, h2, h3, h4, h5, h6, label, .stMarkdown p {
+    /* Global text */
+    html, body, [class*="css"]  {
         color: black !important;
     }
 
-    /* Make radio button/checkbox labels black */
-    .stRadio label, .stCheckbox label, .stSelectbox label {
+    /* Headings */
+    h1, h2, h3, h4, h5, h6 {
         color: black !important;
     }
 
-    /* Ensure text inside forms is also black */
-    .stTextInput label, .stTextArea label, .stNumberInput label {
+    /* Streamlit widget labels */
+    label, .stMarkdown, .stRadio label, .stCheckbox label, .stSelectbox label {
+        color: black !important;
+    }
+
+    /* Options inside radio/selectbox */
+    div[role="radiogroup"] div, div[data-baseweb="select"] * {
+        color: black !important;
+    }
+
+    /* Buttons */
+    button, .stButton>button {
+        color: black !important;
+    }
+
+    /* Result / output text */
+    .stAlert, .stSuccess, .stError, .stInfo, .stWarning, .stMarkdown p {
         color: black !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 
 
 # -------------------------- App Setup --------------------------
@@ -458,6 +474,7 @@ elif st.session_state.page == "domain_questions":
     page_domain_questions()
 elif st.session_state.page == "result":
     page_result()
+
 
 
 
