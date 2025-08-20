@@ -11,6 +11,15 @@ st.set_page_config(
 # -------------------------- Styles (single, valid block) --------------------------
 st.markdown("""
 <style>
+/* --- Force ALL text to black globally --- */
+html, body, [class*="st-"], div, p, span, label, h1, h2, h3, h4, h5, h6 {
+    color: black !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
 /* Animated gradient background */
 body, .stApp {
   background: linear-gradient(120deg, #fdfbfb, #ebedee);
@@ -431,4 +440,5 @@ elif st.session_state.page == "domain_questions":
     page_domain_questions()
 elif st.session_state.page == "result":
     page_result()
+
 
