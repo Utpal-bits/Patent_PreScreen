@@ -159,8 +159,9 @@ def score_block(answers, yes="Yes", neutral=("Maybe / Not Sure", "I haven’t ch
     pct = round(raw / total * 100, 1) if total else 0.0
     return pct, yes_count, neutral_count, total
 
+# --- MODIFIED --- Updated the steps for the new flow
 def step_progress(current_step:int):
-    steps = ["General", "Domain", "Answers", "Result"]
+    steps = ["General", "Preliminary", "Domain", "Final Result"]
     cols = st.columns(len(steps))
     for i, label in enumerate(steps, start=1):
         with cols[i-1]:
@@ -199,17 +200,56 @@ def page_general():
         st.markdown('<div class="tip">Tip: If unsure, choose “Maybe / Not Sure”.</div>', unsafe_allow_html=True)
 
     st.divider()
-    if st.button("➡️ Continue to Domain"):
+    # --- MODIFIED --- Button now goes to the new preliminary result page
+    if st.button("➡️ See Preliminary Result"):
         st.session_state.general_answers = answers
+        st.session_state.page = "preliminary_result"
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# --- NEW FUNCTION --- This is the new page for the preliminary result
+def page_preliminary_result():
+    step_progress(2)
+    st.markdown('<div class="app-card">', unsafe_allow_html=True)
+
+    st.markdown('<span class="section-chip pulse">Step 2 · Preliminary Result</span>', unsafe_allow_html=True)
+    st.markdown("## 🎯 Your Preliminary Snapshot")
+    st.write("This score is based on your answers to the general questions.")
+
+    gen_pct, _, _, _ = score_block(st.session_state.general_answers)
+
+    st.metric("General Questions Score", f"{gen_pct}%")
+    st.progress(int(gen_pct))
+
+    if gen_pct >= 75:
+        st.success("🚀 **Strong general foundation!** Your idea seems to hit the key marks for novelty and utility.")
+    elif gen_pct >= 50:
+        st.warning("✨ **Promising start.** Some areas could be strengthened, but the core idea has potential.")
+    else:
+        st.error("🔧 **Needs more thought.** The basic requirements for patentability might not be met yet.")
+    
+    st.info("Answering domain-specific questions will provide a more accurate and refined result.")
+    st.divider()
+    
+    st.markdown("### ✅ What's Next?")
+    cols = st.columns(2)
+    if cols[0].button("🔁 Start Over"):
+        for k in list(st.session_state.keys()):
+            del st.session_state[k]
+        st.rerun()
+        
+    if cols[1].button("🔬 Refine with Domain Questions ➡️"):
         st.session_state.page = "choose_domain"
         st.rerun()
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -------------------------- Domain Choice --------------------------
 def page_domain_choice():
-    step_progress(2)
+    # --- MODIFIED --- Step number is updated
+    step_progress(3)
     st.markdown('<div class="app-card">', unsafe_allow_html=True)
-    st.markdown('<span class="section-chip pulse">Step 2 · Pick Domain</span>', unsafe_allow_html=True)
+    st.markdown('<span class="section-chip pulse">Step 3 · Pick Domain</span>', unsafe_allow_html=True)
     st.markdown("## 🌐 What best fits your invention?")
 
     domain = st.radio(
@@ -220,8 +260,9 @@ def page_domain_choice():
     st.info("We’ll ask 5 simple questions tailored to your choice.")
 
     cols = st.columns(2)
+    # --- MODIFIED --- Back button now goes to the preliminary result
     if cols[0].button("⬅️ Back"):
-        st.session_state.page = "general"
+        st.session_state.page = "preliminary_result"
         st.rerun()
     if cols[1].button("Next ➡️"):
         st.session_state.domain = domain
@@ -337,6 +378,7 @@ def domain_specific_flags(domain, answers):
 
 # -------------------------- Domain Questions Page --------------------------
 def page_domain_questions():
+    # --- MODIFIED --- Step number is updated
     step_progress(3)
     st.markdown('<div class="app-card">', unsafe_allow_html=True)
     st.markdown(f'<span class="section-chip pulse">Step 3 · {st.session_state.domain}</span>', unsafe_allow_html=True)
@@ -358,7 +400,7 @@ def page_domain_questions():
     if cols[0].button("⬅️ Back"):
         st.session_state.page = "choose_domain"
         st.rerun()
-    if cols[1].button("Show Result ✅"):
+    if cols[1].button("Show Final Result ✅"):
         for i in range(0, 101, 15):
             pb.progress(i)
             time.sleep(0.02)
@@ -369,10 +411,11 @@ def page_domain_questions():
 
 # -------------------------- Results Page --------------------------
 def page_result():
+    # --- MODIFIED --- Step number is updated
     step_progress(4)
     st.markdown('<div class="app-card">', unsafe_allow_html=True)
     st.markdown('<span class="section-chip pulse">Final · Result</span>', unsafe_allow_html=True)
-    st.markdown("## 🎯 Your Patentability Snapshot")
+    st.markdown("## 🎯 Your Final Patentability Snapshot")
 
     gen_pct, gen_yes, gen_neutral, gen_total = score_block(st.session_state.general_answers)
     dom_pct, dom_yes, dom_neutral, dom_total = score_block(st.session_state.domain_answers)
@@ -381,7 +424,7 @@ def page_result():
     final = round(gen_pct*0.6 + dom_pct*0.4, 1)
     st.session_state.final_score = final
 
-    st.write("### 📊 Scores")
+    st.write("### 📊 Final Scores")
     c1, c2, c3 = st.columns(3)
     c1.metric("General", f"{gen_pct}%")
     c2.metric(f"{st.session_state.domain}", f"{dom_pct}%")
@@ -432,14 +475,14 @@ def page_result():
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -------------------------- Router --------------------------
+# --- MODIFIED --- Added the new page to the router
 if st.session_state.page == "general":
     page_general()
+elif st.session_state.page == "preliminary_result":
+    page_preliminary_result()
 elif st.session_state.page == "choose_domain":
     page_domain_choice()
 elif st.session_state.page == "domain_questions":
     page_domain_questions()
 elif st.session_state.page == "result":
     page_result()
-
-
-
