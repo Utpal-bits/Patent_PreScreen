@@ -1,7 +1,50 @@
 import streamlit as st
 
-st.set_page_config(page_title="Patent Eligibility Quiz", page_icon="🧾", layout="centered")
+# -------------------------- Page Setup --------------------------
+st.set_page_config(
+    page_title="Patent Eligibility Quiz",
+    page_icon="🧾",
+    layout="centered"
+)
 
+# -------------------------- Custom CSS --------------------------
+st.markdown("""
+    <style>
+    /* Increase font sizes */
+    h1, h2, h3, h4, h5, h6 {
+        font-size: 200% !important;
+        color: #2c3e50;
+    }
+    .stRadio label {
+        font-size: 150% !important;
+        color: #1a5276;
+    }
+    .stButton>button {
+        font-size: 150% !important;
+        border-radius: 12px;
+        padding: 12px 28px;
+        background: linear-gradient(135deg, #1abc9c, #16a085);
+        color: white;
+        font-weight: bold;
+        transition: 0.3s ease-in-out;
+    }
+    .stButton>button:hover {
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        transform: scale(1.05);
+    }
+    /* Result box animations */
+    .success, .warning, .error {
+        font-size: 150% !important;
+        animation: fadeIn 2s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from {opacity: 0; transform: translateY(20px);}
+        to {opacity: 1; transform: translateY(0);}
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# -------------------------- Title --------------------------
 st.title("🧾 Patent Eligibility Assessment")
 
 # ---- Session State ----
@@ -14,10 +57,9 @@ if "domain" not in st.session_state:
 if "domain_score" not in st.session_state:
     st.session_state.domain_score = 0
 
-
 # ---- General Questions ----
 def page1():
-    st.header("Step 1: General Questions")
+    st.header("✨ Step 1: General Questions")
     st.write("Answer these to check if your invention meets basic patentability criteria.")
 
     questions = [
@@ -41,10 +83,9 @@ def page1():
         st.session_state.general_score = sum([1 for a in answers if a == "Yes"])
         st.session_state.page = 2
 
-
 # ---- Domain Selection ----
 def page2():
-    st.header("Step 2: Choose Your Domain")
+    st.header("🎨 Step 2: Choose Your Domain")
     domain = st.radio(
         "Which is your background/area of interest?",
         ["Biology", "Chemistry", "Mechanical", "Computer Science", "Others"]
@@ -53,10 +94,9 @@ def page2():
         st.session_state.domain = domain
         st.session_state.page = 3
 
-
 # ---- Domain-Specific Questions ----
 def page3():
-    st.header(f"Step 3: {st.session_state.domain} Questions")
+    st.header(f"🔬 Step 3: {st.session_state.domain} Questions")
     st.write("Answer these domain-specific questions.")
 
     domain_questions = {
@@ -98,11 +138,11 @@ def page3():
     }
 
     explanations = {
-        "Biology": "Discoveries of natural biological materials are not patentable. But modified or engineered biological materials with specific applications may be protected.",
-        "Chemistry": "Novel synthetic compounds, formulations, or chemical processes can often be patented. Common or natural chemicals cannot, unless significantly modified.",
-        "Mechanical": "Mechanical inventions with clear technical improvements are usually patentable. Simple rearrangements of known devices without new functionality may not qualify.",
-        "Computer Science": "Pure software ideas are not patentable. But technical software that improves hardware or solves a specific technical problem may qualify.",
-        "Others": "Your invention may be patentable depending on novelty, utility, and non-obviousness."
+        "Biology": "🧬 Discoveries of natural biological materials are not patentable. But modified or engineered biological materials with specific applications may be protected.",
+        "Chemistry": "⚗️ Novel synthetic compounds, formulations, or chemical processes can often be patented. Common or natural chemicals cannot, unless significantly modified.",
+        "Mechanical": "⚙️ Mechanical inventions with clear technical improvements are usually patentable. Simple rearrangements of known devices without new functionality may not qualify.",
+        "Computer Science": "💻 Pure software ideas are not patentable. But technical software that improves hardware or solves a specific technical problem may qualify.",
+        "Others": "✨ Your invention may be patentable depending on novelty, utility, and non-obviousness."
     }
 
     answers = []
@@ -116,7 +156,6 @@ def page3():
         st.session_state.domain_score = sum([1 for a in answers if a == "Yes"])
         st.session_state.explanation = explanations[st.session_state.domain]
         st.session_state.page = 4
-
 
 # ---- Results ----
 def page4():
@@ -137,7 +176,6 @@ def page4():
         st.error("🚫 Your invention may face challenges in patentability. Consider refining your idea or consulting an expert.")
 
     st.info("💡 Remember: This is just an initial assessment, not a legal opinion. For official advice, consult a patent professional.")
-
 
 # ---- Page Navigation ----
 if st.session_state.page == 1:
