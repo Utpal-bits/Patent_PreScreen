@@ -1,279 +1,93 @@
 import streamlit as st
 
-# -------------------------- Page Setup --------------------------
-st.set_page_config(
-    page_title="Patent Eligibility Quiz",
-    page_icon="🧾",
-    layout="centered"
-)
+# -------------------- Page Config --------------------
+st.set_page_config(page_title="Patent Eligibility Checker", page_icon="💡", layout="wide")
 
-# -------------------------- Custom CSS --------------------------
+# -------------------- Custom CSS --------------------
 st.markdown("""
-    <style>
-    /* --- General Styling --- */
-    h1, h2, h3, h4, h5, h6 {
-        font-size: 200% !important;
-        color: #2c3e50;
-        font-weight: 600;
-    }
-    .stRadio label {
-        font-size: 140% !important;
-        color: #000000 !important; /* force black */
-        font-weight: bold;
-    }
-    .stButton>button {
-        font-size: 140% !important;
-        border-radius: 10px;
-        padding: 12px 24px;
-        background: linear-gradient(135deg, #2E86C1, #5DADE2);
-        color: white;
-        font-weight: bold;
-        transition: 0.3s ease-in-out;
-    }
-    .stButton>button:hover {
-        background: linear-gradient(135deg, #1F618D, #2874A6);
-        transform: scale(1.05);
-    }
-
-    /* --- Question Box --- */
-    .question-box {
-        background: #f4f6f7;
-        padding: 20px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        border-left: 6px solid #5DADE2;
-        animation: fadeIn 1s ease-in-out;
-        color: #000000 !important; /* black text */
-        font-weight: bold;
-    }
-    .question-box:nth-child(odd) {
-        background: #EBF5FB;
-        border-left: 6px solid #3498DB;
-    }
-    .question-box:nth-child(even) {
-        background: #E8F8F5;
-        border-left: 6px solid #1ABC9C;
-    }
-
-    /* --- Results Animation --- */
-    .success, .warning, .error {
-        font-size: 150% !important;
-        animation: fadeIn 1.5s ease-in-out;
-    }
-
-    /* --- Fade In --- */
-    @keyframes fadeIn {
-        from {opacity: 0; transform: translateY(15px);}
-        to {opacity: 1; transform: translateY(0);}
-    }
-
-    /* --- Progress Tracker --- */
-    .progress-container {
-        display: flex;
-        justify-content: space-between;
-        margin: 20px 0;
-        padding: 0 15px;
-    }
-    .step {
-        flex: 1;
-        text-align: center;
-        position: relative;
-        font-weight: bold;
-        color: #7f8c8d;
-    }
-    .step.active {
-        color: #2E86C1;
-    }
-    .step::before {
-        content: '';
-        display: block;
-        margin: 0 auto 8px auto;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background: #bdc3c7;
-    }
-    .step.active::before {
-        background: #2E86C1;
-    }
-    .step::after {
-        content: '';
-        position: absolute;
-        top: 12px;
-        left: 50%;
-        width: 100%;
-        height: 4px;
-        background: #bdc3c7;
-        z-index: -1;
-    }
-    .step:last-child::after {
-        display: none;
-    }
-    .active + .step::after {
-        background: #2E86C1;
-    }
-    </style>
+<style>
+body {
+    background: linear-gradient(to right, #ff9966, #ffcc66);
+    font-family: 'Segoe UI', sans-serif;
+    color: black;
+}
+h2, h3, h4 {
+    color: black;
+    text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
+}
+.question-box {
+    background: rgba(255,255,255,0.85);
+    padding: 18px;
+    border-radius: 15px;
+    margin-bottom: 12px;
+    box-shadow: 2px 4px 12px rgba(0,0,0,0.15);
+}
+.stRadio > label {
+    font-weight: bold !important;
+    color: black !important;
+}
+.stButton > button {
+    background: #ff8800;
+    color: white;
+    border-radius: 12px;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+}
+.stButton > button:hover {
+    transform: scale(1.05);
+    background: #ffaa00;
+}
+</style>
 """, unsafe_allow_html=True)
 
-# -------------------------- Title --------------------------
-st.title("🧾 Patent Eligibility Assessment")
+# -------------------- Title --------------------
+st.markdown("<h2 style='text-align:center; animation: fadeIn 2s;'>💡 Patent Eligibility Self-Assessment</h2>", unsafe_allow_html=True)
 
-# ---- Session State ----
-if "page" not in st.session_state:
-    st.session_state.page = 1
-if "general_score" not in st.session_state:
-    st.session_state.general_score = 0
-if "domain" not in st.session_state:
-    st.session_state.domain = None
-if "domain_score" not in st.session_state:
-    st.session_state.domain_score = 0
+# -------------------- Questions --------------------
+questions = [
+    "Is your invention novel (not publicly known)?",
+    "Does it involve an inventive step (not obvious)?",
+    "Can it be applied in industry?",
+    "Does it fall under non-excluded subject matter (not laws of nature/abstract ideas)?",
+    "Have you conducted a prior art search?",
+    "Do you have technical details that distinguish your invention?",
+    "Would experts in the field consider this solution non-trivial?"
+]
 
-# ---- Progress Tracker ----
-def progress_tracker(current_step):
-    steps = ["Step 1", "Step 2", "Step 3", "Step 4"]
-    tracker_html = '<div class="progress-container">'
-    for i, step in enumerate(steps, 1):
-        if i == current_step:
-            tracker_html += f'<div class="step active">{step}</div>'
-        else:
-            tracker_html += f'<div class="step">{step}</div>'
-    tracker_html += '</div>'
-    st.markdown(tracker_html, unsafe_allow_html=True)
+answers = {}
+score = 0
+maybe_tips = []
 
-# ---- General Questions ----
-def page1():
-    progress_tracker(1)
-    st.header("✨ Step 1: General Questions")
-    st.write("Answer these to check if your invention meets basic patentability criteria.")
+with st.spinner("Loading assessment..."):
+    for i, q in enumerate(questions[:7]):  # First 7 essential questions
+        with st.expander(f"Q{i+1}: {q}", expanded=False):
+            ans = st.radio("Select an option:", ["Yes ✅", "No ❌", "Maybe 🤔"], key=f"q{i}")
+            answers[q] = ans
+            if ans == "Yes ✅":
+                score += 1
+            elif ans == "Maybe 🤔":
+                maybe_tips.append(f"👉 For Q{i+1}, it’s better to conduct a deeper patent search or consult an expert.")
 
-    questions = [
-        "Is your invention new and not previously known?",
-        "Does it have a clear practical use?",
-        "Can it be reproduced by others?",
-        "Is it more than just an abstract idea or theory?",
-        "Does it provide a clear advantage over existing solutions?",
-        "Can it be described in detail for others to understand?",
-        "Is it not a law of nature, natural phenomenon, or mathematical formula?"
-    ]
+# -------------------- Optional Domain Questions --------------------
+with st.expander("🔍 Domain-Specific (Optional)"):
+    st.write("Answer if you want deeper insights:")
+    dom_q = st.radio("Does your invention belong to a regulated domain (e.g., biotech, pharma)?", ["Yes ✅", "No ❌", "Maybe 🤔"])
+    answers["Domain Specific"] = dom_q
 
-    answers = []
-    with st.form("general_form"):
-        for q in questions:
-            with st.container():
-                st.markdown(f"<div class='question-box'>{q}</div>", unsafe_allow_html=True)
-                ans = st.radio("", ["Yes", "No"], key=q)
-                answers.append(ans)
-        submitted = st.form_submit_button("Next →")
+# -------------------- Results --------------------
+st.subheader("📊 Your Assessment Results:")
 
-    if submitted:
-        st.session_state.general_score = sum([1 for a in answers if a == "Yes"])
-        st.session_state.page = 2
+st.write(f"✅ Score: **{score} / {len(questions)}**")
 
-# ---- Domain Selection ----
-def page2():
-    progress_tracker(2)
-    st.header("🎨 Step 2: Choose Your Domain")
-    domain = st.radio(
-        "Which is your background/area of interest?",
-        ["Biology", "Chemistry", "Mechanical", "Computer Science", "Others"]
-    )
-    if st.button("Next →"):
-        st.session_state.domain = domain
-        st.session_state.page = 3
+if maybe_tips:
+    st.warning("⚠️ Suggestions for 'Maybe' answers:")
+    for tip in maybe_tips:
+        st.write(tip)
 
-# ---- Domain-Specific Questions ----
-def page3():
-    progress_tracker(3)
-    st.header(f"🔬 Step 3: {st.session_state.domain} Questions")
-    st.write("Answer these domain-specific questions.")
-
-    domain_questions = {
-        "Biology": [
-            "Is your invention a new organism, strain, or biological material?",
-            "Is it different from what exists naturally?",
-            "Does it have a clear application (medical, agricultural, industrial)?",
-            "Can it be reproduced consistently in a lab?",
-            "Do you have experimental data or validation?"
-        ],
-        "Chemistry": [
-            "Is your compound new or modified?",
-            "Does it have a novel property?",
-            "Is it useful in industry, medicine, or daily life?",
-            "Can it be manufactured or synthesized reliably?",
-            "Do you have supporting lab data?"
-        ],
-        "Mechanical": [
-            "Does your invention provide a new function or clear improvement?",
-            "Is it more than just combining old parts?",
-            "Could an engineer consider it non-obvious?",
-            "Does it have a practical application?",
-            "Have you made a prototype or design?"
-        ],
-        "Computer Science": [
-            "Does your software solve a technical problem?",
-            "Is it new or significantly different?",
-            "Is it tied to hardware or system-level improvement?",
-            "Could it be reproduced easily by common coding practices?",
-            "Does it have a practical application (e.g., efficiency, automation)?"
-        ],
-        "Others": [
-            "Is your invention new and not obvious?",
-            "Does it provide a clear technical advantage?",
-            "Is it useful in industry or society?",
-            "Can it be reproduced by others?",
-            "Do you have supporting evidence or data?"
-        ]
-    }
-
-    explanations = {
-        "Biology": "🧬 Discoveries of natural biological materials are not patentable. But modified or engineered biological materials with specific applications may be protected.",
-        "Chemistry": "⚗️ Novel synthetic compounds, formulations, or chemical processes can often be patented. Common or natural chemicals cannot, unless significantly modified.",
-        "Mechanical": "⚙️ Mechanical inventions with clear technical improvements are usually patentable. Simple rearrangements of known devices without new functionality may not qualify.",
-        "Computer Science": "💻 Pure software ideas are not patentable. But technical software that improves hardware or solves a specific technical problem may qualify.",
-        "Others": "✨ Your invention may be patentable depending on novelty, utility, and non-obviousness."
-    }
-
-    answers = []
-    with st.form("domain_form"):
-        for q in domain_questions[st.session_state.domain]:
-            with st.container():
-                st.markdown(f"<div class='question-box'>{q}</div>", unsafe_allow_html=True)
-                ans = st.radio("", ["Yes", "No"], key=q)
-                answers.append(ans)
-        submitted = st.form_submit_button("Show Results")
-
-    if submitted:
-        st.session_state.domain_score = sum([1 for a in answers if a == "Yes"])
-        st.session_state.explanation = explanations[st.session_state.domain]
-        st.session_state.page = 4
-
-# ---- Results ----
-def page4():
-    progress_tracker(4)
-    st.header("✅ Your Patent Eligibility Result")
-
-    total_score = st.session_state.general_score + st.session_state.domain_score
-    total_questions = 7 + 5
-    percentage = int((total_score / total_questions) * 100)
-
-    st.subheader(f"📊 Eligibility Score: {percentage}%")
-    st.write(st.session_state.explanation)
-
-    if percentage >= 70:
-        st.success("🌟 Great job! Your invention shows strong potential for patentability. Keep pushing forward!")
-    elif percentage >= 40:
-        st.warning("⚖️ Your invention has some patentable aspects, but improvements or clarifications may be needed.")
-    else:
-        st.error("🚫 Your invention may face challenges in patentability. Consider refining your idea or consulting an expert.")
-
-    st.info("💡 Remember: This is just an initial assessment, not a legal opinion. For official advice, consult a patent professional.")
-
-# ---- Page Navigation ----
-if st.session_state.page == 1:
-    page1()
-elif st.session_state.page == 2:
-    page2()
-elif st.session_state.page == 3:
-    page3()
-elif st.session_state.page == 4:
-    page4()
+if score >= 6:
+    st.success("🎉 Strong Patent Potential! You should seriously consider filing.")
+    st.balloons()
+elif 3 <= score < 6:
+    st.info("⚖️ Moderate Patent Potential. Some areas need strengthening.")
+else:
+    st.error("❌ Weak Patent Potential. Needs significant improvement.")
