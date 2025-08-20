@@ -18,7 +18,8 @@ st.markdown("""
     }
     .stRadio label {
         font-size: 140% !important;
-        color: #154360;
+        color: #000000 !important; /* force black */
+        font-weight: bold;
     }
     .stButton>button {
         font-size: 140% !important;
@@ -42,6 +43,8 @@ st.markdown("""
         margin-bottom: 20px;
         border-left: 6px solid #5DADE2;
         animation: fadeIn 1s ease-in-out;
+        color: #000000 !important; /* black text */
+        font-weight: bold;
     }
     .question-box:nth-child(odd) {
         background: #EBF5FB;
@@ -157,7 +160,7 @@ def page1():
     with st.form("general_form"):
         for q in questions:
             with st.container():
-                st.markdown(f"<div class='question-box'><b>{q}</b></div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='question-box'>{q}</div>", unsafe_allow_html=True)
                 ans = st.radio("", ["Yes", "No"], key=q)
                 answers.append(ans)
         submitted = st.form_submit_button("Next →")
@@ -234,7 +237,7 @@ def page3():
     with st.form("domain_form"):
         for q in domain_questions[st.session_state.domain]:
             with st.container():
-                st.markdown(f"<div class='question-box'><b>{q}</b></div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='question-box'>{q}</div>", unsafe_allow_html=True)
                 ans = st.radio("", ["Yes", "No"], key=q)
                 answers.append(ans)
         submitted = st.form_submit_button("Show Results")
