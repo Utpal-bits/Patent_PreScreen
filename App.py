@@ -40,7 +40,7 @@ body, .stApp {
   border-radius:999px;
   font-weight:700;
   font-size:0.9rem;
-  color:black;
+  color:black !important;   /* enforce black */
   background:linear-gradient(135deg,#d5f4ff,#f3e8ff);
   border:1px solid rgba(0,0,0,0.06);
 }
@@ -52,7 +52,7 @@ body, .stApp {
   margin-bottom: 16px;
   font-size: 1.15rem;
   font-weight: 600;
-  color: black; /* black text */
+  color: black !important; /* enforce black */
   border: 1px solid rgba(0,0,0,0.06);
   box-shadow: 0 6px 18px rgba(0,0,0,0.05);
   transition: transform .15s ease, box-shadow .15s ease;
@@ -62,14 +62,19 @@ body, .stApp {
   box-shadow: 0 10px 22px rgba(0,0,0,0.08);
 }
 
+/* Ensure all question text inside qcard is black */
+.qcard p {
+  color: black !important;
+}
+
 /* Pastel backgrounds for variety (readable with black text) */
-.q1 { background-color: #FFD1C1; }  /* light coral */
-.q2 { background-color: #D1C4FF; }  /* light purple */
-.q3 { background-color: #B2F0E9; }  /* light teal */
-.q4 { background-color: #FFE0B2; }  /* light orange */
-.q5 { background-color: #E6CCFF; }  /* lavender */
-.q6 { background-color: #C1E1C1; }  /* mint green */
-.q7 { background-color: #FFCCE5; }  /* soft pink */
+.q1 { background-color: #FFD1C1; }
+.q2 { background-color: #D1C4FF; }
+.q3 { background-color: #B2F0E9; }
+.q4 { background-color: #FFE0B2; }
+.q5 { background-color: #E6CCFF; }
+.q6 { background-color: #C1E1C1; }
+.q7 { background-color: #FFCCE5; }
 
 /* Pulse anim for headers */
 @keyframes softPulse {
@@ -127,6 +132,7 @@ div[role="radiogroup"] label {
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 # -------------------------- Session State --------------------------
 if "page" not in st.session_state:
@@ -430,4 +436,5 @@ elif st.session_state.page == "domain_questions":
     page_domain_questions()
 elif st.session_state.page == "result":
     page_result()
+
 
