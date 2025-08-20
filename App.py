@@ -40,7 +40,7 @@ body, .stApp {
   border-radius:999px;
   font-weight:700;
   font-size:0.9rem;
-  color:#222;
+  color:black;
   background:linear-gradient(135deg,#d5f4ff,#f3e8ff);
   border:1px solid rgba(0,0,0,0.06);
 }
@@ -52,7 +52,7 @@ body, .stApp {
   margin-bottom: 16px;
   font-size: 1.15rem;
   font-weight: 600;
-  color: #000; /* black text */
+  color: black; /* black text */
   border: 1px solid rgba(0,0,0,0.06);
   box-shadow: 0 6px 18px rgba(0,0,0,0.05);
   transition: transform .15s ease, box-shadow .15s ease;
@@ -430,3 +430,4 @@ elif st.session_state.page == "domain_questions":
     page_domain_questions()
 elif st.session_state.page == "result":
     page_result()
+
