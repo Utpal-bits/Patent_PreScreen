@@ -1,118 +1,124 @@
-import streamlit as st
-
-# -------------------- Page Config --------------------
-st.set_page_config(page_title="Patent Eligibility Checker", page_icon="💡", layout="wide")
-
-# -------------------- Custom CSS --------------------
+# -------------------------- Styles (single, valid block) --------------------------
 st.markdown("""
 <style>
-body {
-    background: linear-gradient(to right, #ff9966, #ffcc66);
-    font-family: 'Segoe UI', sans-serif;
-    color: black;
+/* Animated gradient background */
+body, .stApp {
+  background: linear-gradient(120deg, #fdfbfb, #ebedee);
+  background-size: 400% 400%;
+  animation: gradientShift 18s ease infinite;
 }
-h2, h3 {
-    color: black;
-    text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
+@keyframes gradientShift {
+  0% {background-position: 0% 50%;}
+  50% {background-position: 100% 50%;}
+  100% {background-position: 0% 50%;}
 }
-.question-box {
-    background: rgba(255,255,255,0.9);
-    padding: 18px;
-    border-radius: 15px;
-    margin-bottom: 15px;
-    box-shadow: 2px 4px 12px rgba(0,0,0,0.15);
+
+/* App container card */
+.app-card {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(6px);
+  border-radius: 22px;
+  padding: 26px 22px;
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.07);
 }
-.stRadio > label {
-    font-weight: bold !important;
-    color: black !important;
+
+/* Section title chip */
+.section-chip {
+  display:inline-block;
+  padding:8px 14px;
+  border-radius:999px;
+  font-weight:700;
+  font-size:0.9rem;
+  color:black !important;   /* enforce black */
+  background:linear-gradient(135deg,#d5f4ff,#f3e8ff);
+  border:1px solid rgba(0,0,0,0.06);
 }
-.stButton > button {
-    background: #ff8800;
-    color: white;
-    border-radius: 12px;
-    font-weight: bold;
-    padding: 8px 20px;
-    transition: all 0.3s ease-in-out;
+
+/* Question card (black text) */
+.qcard {
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 16px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: black !important; /* enforce black */
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  transition: transform .15s ease, box-shadow .15s ease;
 }
-.stButton > button:hover {
-    transform: scale(1.05);
-    background: #ffaa00;
+.qcard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+}
+
+/* Ensure all question text inside qcard is black */
+.qcard p {
+  color: black !important;
+}
+
+/* Pastel backgrounds for variety (readable with black text) */
+.q1 { background-color: #FFD1C1; }
+.q2 { background-color: #D1C4FF; }
+.q3 { background-color: #B2F0E9; }
+.q4 { background-color: #FFE0B2; }
+.q5 { background-color: #E6CCFF; }
+.q6 { background-color: #C1E1C1; }
+.q7 { background-color: #FFCCE5; }
+
+/* Pulse anim for headers */
+@keyframes softPulse {
+  0% {transform: scale(1);}
+  50% {transform: scale(1.01);}
+  100% {transform: scale(1);}
+}
+.pulse { animation: softPulse 3.8s ease-in-out infinite; }
+
+/* Big CTA button */
+div.stButton>button {
+  border-radius: 14px !important;
+  padding: 12px 18px !important;
+  font-weight: 800 !important;
+  font-size: 1.05rem !important;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08) !important;
+}
+
+/* Progress badge */
+.badge {
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:999px;
+  background:#eef2ff;
+  color:#3730a3;
+  font-weight:700;
+  font-size:0.85rem;
+  border:1px solid #e5e7eb;
+}
+
+/* Insight pill */
+.insight {
+  background:#f0f9ff;
+  border:1px solid #bae6fd;
+  color:#0c4a6e;
+  padding:10px 12px;
+  border-radius:12px;
+  font-size:0.95rem;
+  margin:6px 0;
+}
+
+/* Tiny tip */
+.tip {
+  font-size:0.9rem;
+  color:#111;
+  background:#f8fafc;
+  border:1px dashed #cbd5e1;
+  padding:10px 12px;
+  border-radius:12px;
+}
+
+/* Force radio labels to black for consistency */
+div[role="radiogroup"] label {
+  color: #000 !important;
 }
 </style>
 """, unsafe_allow_html=True)
-
-# -------------------- Title --------------------
-st.markdown("<h2 style='text-align:center;'>💡 Patent Eligibility Checker</h2>", unsafe_allow_html=True)
-
-# -------------------- Core Questions --------------------
-core_questions = [
-    "Is your idea something new?",
-    "Is it different from what already exists?",
-    "Can it be used in real life?",
-    "Is it more than just a simple theory or law of nature?",
-    "Have you checked if similar ideas already exist?",
-    "Do you have details that make your idea stand out?",
-    "Would experts agree that this is not an obvious solution?"
-]
-
-# -------------------- Domain-Specific --------------------
-domain_questions = {
-    "Does your idea involve healthcare, biotech, or pharma?":
-        "⚠️ Healthcare and biotech inventions often face stricter ethical and regulatory reviews.",
-    "Does it deal with software or algorithms?":
-        "⚠️ Software patents can be harder to get — many jurisdictions reject 'abstract ideas' without technical application.",
-    "Is it linked to government-regulated areas (like energy, defense)?":
-        "⚠️ Defense and energy-related inventions may require special approvals or face export restrictions."
-}
-
-answers = {}
-score = 0
-maybe_tips = []
-domain_warnings = []
-
-# Collapsible Core
-st.subheader("📝 Core Questions")
-for i, q in enumerate(core_questions):
-    with st.expander(f"Q{i+1}: {q}", expanded=False):
-        ans = st.radio("Your answer:", ["Yes ✅", "No ❌", "Maybe 🤔"], key=f"core_{i}")
-        answers[q] = ans
-        if ans == "Yes ✅":
-            score += 1
-        elif ans == "Maybe 🤔":
-            maybe_tips.append(f"👉 For Q{i+1}, you may need to do more research or consult an expert.")
-
-# Collapsible Domain
-st.subheader("🌐 Domain-Specific Questions")
-for j, (dq, warning) in enumerate(domain_questions.items()):
-    with st.expander(f"D{j+1}: {dq}", expanded=False):
-        ans = st.radio("Your answer:", ["Yes ✅", "No ❌", "Maybe 🤔"], key=f"dom_{j}")
-        answers[dq] = ans
-        if ans == "Yes ✅":
-            score += 1
-            domain_warnings.append(warning)
-        elif ans == "Maybe 🤔":
-            maybe_tips.append(f"👉 For Domain Q{j+1}, you may need to check specific legal restrictions.")
-
-# -------------------- Results --------------------
-st.subheader("📊 Your Results")
-
-total_q = len(core_questions) + len(domain_questions)
-st.write(f"✅ Score: **{score} / {total_q}**")
-
-if maybe_tips:
-    st.warning("⚠️ Suggestions for 'Maybe':")
-    for tip in maybe_tips:
-        st.write(tip)
-
-if domain_warnings:
-    st.error("⚠️ Domain-Specific Considerations:")
-    for dw in domain_warnings:
-        st.write(dw)
-
-if score >= total_q - 1:
-    st.success("🎉 Strong potential! Filing for a patent may be a good idea.")
-    st.balloons()
-elif total_q//2 <= score < total_q - 1:
-    st.info("⚖️ Moderate potential. Some parts need more work.")
-else:
-    st.error("❌ Weak potential. Needs significant improvement.")
