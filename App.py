@@ -1,3 +1,4 @@
+import time
 import streamlit as st
 
 # -------------------------- App Setup --------------------------
@@ -7,7 +8,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# -------------------------- Styles --------------------------
+# -------------------------- Styles (single, valid block) --------------------------
 st.markdown("""
 <style>
 /* Animated gradient background */
@@ -39,32 +40,36 @@ body, .stApp {
   border-radius:999px;
   font-weight:700;
   font-size:0.9rem;
-  color:#224;
+  color:#222;
   background:linear-gradient(135deg,#d5f4ff,#f3e8ff);
   border:1px solid rgba(0,0,0,0.06);
 }
 
-# ---- Custom CSS ----
-st.markdown("""
-    <style>
-    .question-box {
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 20px;
-        font-size: 1.3em;  /* Bigger text */
-        font-weight: 500;
-        color: black;  /* Black text */
-    }
-    .q1 { background-color: #FFD1C1; }   /* light coral */
-    .q2 { background-color: #D1C4FF; }   /* light purple */
-    .q3 { background-color: #B2F0E9; }   /* light teal */
-    .q4 { background-color: #FFE0B2; }   /* light orange */
-    .q5 { background-color: #E6CCFF; }   /* lavender */
-    .q6 { background-color: #C1E1C1; }   /* mint green */
-    .q7 { background-color: #FFCCE5; }   /* soft pink */
-    </style>
-""", unsafe_allow_html=True)
+/* Question card (black text) */
+.qcard {
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 16px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #000; /* black text */
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.qcard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+}
 
+/* Pastel backgrounds for variety (readable with black text) */
+.q1 { background-color: #FFD1C1; }  /* light coral */
+.q2 { background-color: #D1C4FF; }  /* light purple */
+.q3 { background-color: #B2F0E9; }  /* light teal */
+.q4 { background-color: #FFE0B2; }  /* light orange */
+.q5 { background-color: #E6CCFF; }  /* lavender */
+.q6 { background-color: #C1E1C1; }  /* mint green */
+.q7 { background-color: #FFCCE5; }  /* soft pink */
 
 /* Pulse anim for headers */
 @keyframes softPulse {
@@ -76,11 +81,11 @@ st.markdown("""
 
 /* Big CTA button */
 div.stButton>button {
-  border-radius: 14px;
-  padding: 12px 18px;
-  font-weight: 800;
-  font-size: 1.05rem;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  border-radius: 14px !important;
+  padding: 12px 18px !important;
+  font-weight: 800 !important;
+  font-size: 1.05rem !important;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08) !important;
 }
 
 /* Progress badge */
@@ -109,11 +114,16 @@ div.stButton>button {
 /* Tiny tip */
 .tip {
   font-size:0.9rem;
-  color:#334155;
+  color:#111;
   background:#f8fafc;
   border:1px dashed #cbd5e1;
   padding:10px 12px;
   border-radius:12px;
+}
+
+/* Force radio labels to black for consistency */
+div[role="radiogroup"] label {
+  color: #000 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -212,68 +222,67 @@ def page_domain_choice():
 # -------------------------- Domain Q Bank + Insights --------------------------
 DOMAIN_QS = {
     "Biology": [
-        ("Is your invention a new organism, strain, or biological material?", 
+        ("Is your invention a new organism, strain, or biological material?",
          "If it's just found in nature, it’s not patentable. If it's modified/engineered or used in a new way, it can be."),
-        ("Is it different from what exists naturally (not just discovered)?", 
+        ("Is it different from what exists naturally (not just discovered)?",
          "Natural discoveries alone aren’t patentable; engineered differences help."),
-        ("Does it have a clear use (medical, agricultural, industrial)?", 
+        ("Does it have a clear use (medical, agricultural, industrial)?",
          "Clear, practical use supports patentability."),
-        ("Can it be reproduced consistently in a lab or controlled setting?", 
+        ("Can it be reproduced consistently in a lab or controlled setting?",
          "Reproducibility is key — others should be able to follow your method."),
-        ("Do you have experimental data or validation (tests/results)?", 
+        ("Do you have experimental data or validation (tests/results)?",
          "Data makes your case stronger; consider basic experiments.")
     ],
     "Chemistry": [
-        ("Is your compound/material new or a modified version of a known one?", 
+        ("Is your compound/material new or a modified version of a known one?",
          "New or significantly modified substances can be patentable."),
-        ("Does it show a new/strong property (stability, strength, reactivity)?", 
+        ("Does it show a new/strong property (stability, strength, reactivity)?",
          "A real, measurable improvement helps a lot."),
-        ("Is it useful in industry, medicine, or daily life?", 
+        ("Is it useful in industry, medicine, or daily life?",
          "Industrial applicability is required."),
-        ("Can it be manufactured or synthesized in a reliable way?", 
+        ("Can it be manufactured or synthesized in a reliable way?",
          "Repeatable production supports utility."),
-        ("Do you have supporting lab data (tests, characterization)?", 
+        ("Do you have supporting lab data (tests, characterization)?",
          "Data like spectra or performance tests strengthens novelty/utility.")
     ],
     "Mechanical": [
-        ("Does your invention add a new function or clear improvement over devices today?", 
+        ("Does your invention add a new function or clear improvement over devices today?",
          "New function/performance is a strong sign."),
-        ("Is it more than just combining old parts that work the same way?", 
+        ("Is it more than just combining old parts that work the same way?",
          "Simple combinations are usually not patentable."),
-        ("Would a typical engineer find your solution non-obvious?", 
+        ("Would a typical engineer find your solution non-obvious?",
          "If it’s surprising or counter-intuitive, that helps."),
-        ("Does it have a real-world application in products or processes?", 
+        ("Does it have a real-world application in products or processes?",
          "Clear application strengthens your case."),
-        ("Do you have a prototype or detailed design?", 
+        ("Do you have a prototype or detailed design?",
          "Prototypes/designs help prove it works and is buildable.")
     ],
     "Computer Science": [
-        ("Does your software/algorithm solve a technical problem (not just business logic)?", 
+        ("Does your software/algorithm solve a technical problem (not just business logic)?",
          "Pure business methods/abstract math are generally not patentable."),
-        ("Is it new or clearly different from known solutions?", 
+        ("Is it new or clearly different from known solutions?",
          "Show how it differs from common approaches."),
-        ("Does it improve hardware/system performance (speed, security, memory)?", 
+        ("Does it improve hardware/system performance (speed, security, memory)?",
          "Technical improvements tied to systems are stronger."),
-        ("Is it tied to specific hardware or a technical architecture?", 
+        ("Is it tied to specific hardware or a technical architecture?",
          "Linking to hardware/technical effect helps in many jurisdictions."),
-        ("Does it have a practical application with measurable benefit?", 
+        ("Does it have a practical application with measurable benefit?",
          "Demonstrable utility boosts eligibility.")
     ],
     "Others": [
-        ("Is your idea new and not an obvious tweak of existing things?", 
+        ("Is your idea new and not an obvious tweak of existing things?",
          "You need novelty and non-obviousness."),
-        ("Does it provide a clear technical advantage or solves a real problem?", 
+        ("Does it provide a clear technical advantage or solve a real problem?",
          "Practical, technical benefits matter."),
-        ("Can it be used in industry or daily life?", 
+        ("Can it be used in industry or daily life?",
          "Industrial applicability is required."),
-        ("Can others reproduce it by following your method?", 
+        ("Can others reproduce it by following your method?",
          "Enablement/reproducibility is important."),
-        ("Do you have some proof, prototype, or data?", 
+        ("Do you have some proof, prototype, or data?",
          "Evidence makes your case far stronger.")
     ],
 }
 
-# Domain-specific extra rules/messages based on answers
 def domain_specific_flags(domain, answers):
     """Return tailored messages triggered by weak spots."""
     msgs = []
@@ -312,7 +321,6 @@ def domain_specific_flags(domain, answers):
         if n(3):
             msgs.append("🧪 Ensure others can **reproduce** it with your steps/data.")
 
-    # Generic suggestions for uncertain answers
     if any(u(i) for i in range(len(a))):
         msgs.append("🧭 Where you chose **Not sure**, consider a quick check or small test to gain confidence.")
     return msgs
@@ -341,9 +349,9 @@ def page_domain_questions():
         st.session_state.page = "choose_domain"
         st.rerun()
     if cols[1].button("Show Result ✅"):
-        # tiny animated fill
         for i in range(0, 101, 15):
             pb.progress(i)
+            time.sleep(0.02)
         st.session_state.domain_answers = answers
         st.session_state.page = "result"
         st.rerun()
@@ -356,15 +364,13 @@ def page_result():
     st.markdown('<span class="section-chip pulse">Final · Result</span>', unsafe_allow_html=True)
     st.markdown("## 🎯 Your Patentability Snapshot")
 
-    # Compute both parts
     gen_pct, gen_yes, gen_neutral, gen_total = score_block(st.session_state.general_answers)
     dom_pct, dom_yes, dom_neutral, dom_total = score_block(st.session_state.domain_answers)
 
-    # Weighted average: 60% general, 40% domain (tweakable)
+    # Weighted average: 60% general, 40% domain
     final = round(gen_pct*0.6 + dom_pct*0.4, 1)
     st.session_state.final_score = final
 
-    # Visual meters
     st.write("### 📊 Scores")
     c1, c2, c3 = st.columns(3)
     c1.metric("General", f"{gen_pct}%")
@@ -373,7 +379,6 @@ def page_result():
 
     st.progress(int(final))
 
-    # Encouraging messages
     if final >= 75:
         st.success("🚀 Strong potential! Your answers suggest your idea **may be patentable**. Keep going!")
         st.balloons()
@@ -382,7 +387,6 @@ def page_result():
     else:
         st.error("🔧 Not ready yet. Several key points need work before pursuing a patent.")
 
-    # Domain-specific overall guidance
     OVERALL_GUIDE = {
         "Biology": "Naturally occurring things aren’t patentable by themselves. **Modified or engineered biology with a clear use** can be.",
         "Chemistry": "New/modified substances or **processes with better properties** can be patentable, especially with data.",
@@ -392,14 +396,12 @@ def page_result():
     }
     st.info(OVERALL_GUIDE[st.session_state.domain])
 
-    # Tailored flags from the user’s domain answers
     flags = domain_specific_flags(st.session_state.domain, st.session_state.domain_answers)
     if flags:
         with st.expander("🔍 Personalized suggestions based on your answers"):
             for m in flags:
                 st.markdown(f"- {m}")
 
-    # Next steps & CTA
     st.markdown("---")
     st.markdown("### ✅ What you can do next")
     st.markdown("""
@@ -428,4 +430,3 @@ elif st.session_state.page == "domain_questions":
     page_domain_questions()
 elif st.session_state.page == "result":
     page_result()
-
