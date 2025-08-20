@@ -1,5 +1,27 @@
 import time
 import streamlit as st
+st.markdown(
+    """
+    <style>
+    /* Make all question text black */
+    .question-text, h1, h2, h3, h4, h5, h6, label, .stMarkdown p {
+        color: black !important;
+    }
+
+    /* Make radio button/checkbox labels black */
+    .stRadio label, .stCheckbox label, .stSelectbox label {
+        color: black !important;
+    }
+
+    /* Ensure text inside forms is also black */
+    .stTextInput label, .stTextArea label, .stNumberInput label {
+        color: black !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 
 # -------------------------- App Setup --------------------------
 st.set_page_config(
@@ -436,5 +458,6 @@ elif st.session_state.page == "domain_questions":
     page_domain_questions()
 elif st.session_state.page == "result":
     page_result()
+
 
 
