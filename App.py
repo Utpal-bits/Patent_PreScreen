@@ -48,14 +48,24 @@ for i, q in enumerate(questions, start=1):
 # ---- Submit Button ----
 if st.button("👉 Show Result"):
     yes_count = responses.count("Yes")
-    st.subheader("📊 Your Patent Check Result")
+    maybe_count = responses.count("Maybe / Not Sure") + responses.count("I haven’t checked yet")
     
-    if yes_count >= 5:
-        st.success("✅ Your idea looks promising! It **may be eligible** for a patent. Let’s dig deeper.")
-    elif 3 <= yes_count < 5:
-        st.warning("⚠️ Your idea has potential, but more clarity is needed before moving toward a patent.")
+    # Each Yes = 1 point, Each Maybe = 0.5 point
+    total_score = yes_count + (0.5 * maybe_count)
+    percentage = round((total_score / len(questions)) * 100, 1)
+
+    st.subheader("📊 Your Patent Check Result")
+    st.write(f"🔢 **Eligibility Score: {percentage}%**")
+
+    if percentage >= 75:
+        st.success("✅ Your idea looks promising! It may be patentable. Keep going strong 🚀")
+        st.info("💡 Encouragement: Great job! Your answers show you’ve thought this through. Next step could be searching prior art more carefully or drafting early notes.")
+    elif 50 <= percentage < 75:
+        st.warning("⚠️ Your idea has potential, but more clarity is needed before moving forward.")
+        st.info("💡 Encouragement: Don’t stop here! Even many successful patents started as 'unclear' ideas. With refinement, yours could shine ✨")
     else:
-        st.error("❌ Based on your answers, your idea may not be ready for a patent yet. Try refining it.")
+        st.error("❌ Based on your answers, your idea may not yet be ready for a patent.")
+        st.info("💡 Encouragement: Every great invention starts rough. Use this as a guide to improve — refine your idea, test more, and come back stronger 💪")
 
     st.markdown("---")
     st.markdown("✨ Want to understand better? Let’s answer more **domain-specific questions**.")
