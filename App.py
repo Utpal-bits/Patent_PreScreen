@@ -44,31 +44,27 @@ body, .stApp {
   border:1px solid rgba(0,0,0,0.06);
 }
 
-/* Question card */
-.qcard {
-  border-radius: 18px;
-  padding: 18px 16px;
-  margin: 14px 0 6px 0;
-  color: #102a43;
-  border: 2px solid transparent;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border 0.15s ease;
-  font-size: 1.15rem;
-  font-weight: 600;
-}
-.qcard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(0,0,0,0.08);
-  border: 2px solid rgba(0,0,0,0.06);
-}
+# ---- Custom CSS ----
+st.markdown("""
+    <style>
+    .question-box {
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        font-size: 1.3em;  /* Bigger text */
+        font-weight: 500;
+        color: black;  /* Black text */
+    }
+    .q1 { background-color: #FFD1C1; }   /* light coral */
+    .q2 { background-color: #D1C4FF; }   /* light purple */
+    .q3 { background-color: #B2F0E9; }   /* light teal */
+    .q4 { background-color: #FFE0B2; }   /* light orange */
+    .q5 { background-color: #E6CCFF; }   /* lavender */
+    .q6 { background-color: #C1E1C1; }   /* mint green */
+    .q7 { background-color: #FFCCE5; }   /* soft pink */
+    </style>
+""", unsafe_allow_html=True)
 
-/* Color stripes */
-.q1{ background:linear-gradient(135deg,#ffe9ec,#ffd3dc);}
-.q2{ background:linear-gradient(135deg,#e5e4ff,#d1ccff);}
-.q3{ background:linear-gradient(135deg,#cff7f3,#b8efe8);}
-.q4{ background:linear-gradient(135deg,#ffe8cc,#ffd7a8);}
-.q5{ background:linear-gradient(135deg,#ead8ff,#d6bfff);}
-.q6{ background:linear-gradient(135deg,#d6fae5,#bdf5d5);}
-.q7{ background:linear-gradient(135deg,#ffd9f0,#ffc3e7);}
 
 /* Pulse anim for headers */
 @keyframes softPulse {
@@ -432,3 +428,4 @@ elif st.session_state.page == "domain_questions":
     page_domain_questions()
 elif st.session_state.page == "result":
     page_result()
+
