@@ -10,12 +10,15 @@ st.set_page_config(
     layout="centered"
 )
 
-# -------------------------- Styles --------------------------
+# -------------------------- Custom Styles --------------------------
 st.markdown("""
 <style>
+/* Global text color override for visibility */
 html, body, [class*="st-"], p, span, label, h1, h2, h3, h4, h5, h6 {
-    color: black !important;
+    color: #1a1a1a !important;
 }
+
+/* Background Animation */
 body, .stApp {
   background: linear-gradient(120deg, #fdfbfb, #ebedee);
   background-size: 400% 400%;
@@ -26,53 +29,55 @@ body, .stApp {
   50% {background-position: 100% 50%;}
   100% {background-position: 0% 50%;}
 }
+
+/* Container Styling */
 .app-card {
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(6px);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(10px);
   border-radius: 22px;
-  padding: 26px 22px;
+  padding: 30px;
   border: 1px solid rgba(0,0,0,0.05);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
+
 .section-chip {
   display:inline-block;
-  padding:8px 14px;
+  padding:8px 16px;
   border-radius:999px;
   font-weight:700;
-  font-size:0.9rem;
-  color:black;
-  background:linear-gradient(135deg,#d5f4ff,#f3e8ff);
-  border:1px solid rgba(0,0,0,0.06);
+  font-size:0.85rem;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white !important;
+  margin-bottom: 15px;
 }
+
 .qcard {
-  border-radius: 15px;
-  padding: 20px;
-  margin-bottom: 16px;
-  font-size: 1.15rem;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: black !important;
-  border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  border-left: 5px solid #6366f1;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
-.q1 { background-color: #FFD1C1; } 
-.q2 { background-color: #D1C4FF; } 
-.q3 { background-color: #B2F0E9; } 
-.q4 { background-color: #FFE0B2; } 
-.q5 { background-color: #E6CCFF; } 
-.q6 { background-color: #C1E1C1; } 
-.q7 { background-color: #FFCCE5; }
+
+/* Question Backgrounds */
+.q1 { background-color: #f0f4ff; }
+.q2 { background-color: #f5f3ff; }
+.q3 { background-color: #fdf2f8; }
+.q4 { background-color: #fffbeb; }
+.q5 { background-color: #f0fdf4; }
+.q6 { background-color: #eff6ff; }
+.q7 { background-color: #fef2f2; }
 
 .insight {
-  background:#f0f9ff;
-  border:1px solid #bae6fd;
-  color:#0c4a6e;
-  padding:10px 12px;
-  border-radius:12px;
-  font-size:0.95rem;
-  margin:6px 0;
-}
-div[role="radiogroup"] label {
-  color: #000 !important;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-style: italic;
+  margin-bottom: 20px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -83,135 +88,134 @@ if "page" not in st.session_state:
 if "general_answers" not in st.session_state:
     st.session_state.general_answers = []
 if "domain" not in st.session_state:
-    st.session_state.domain = None
+    st.session_state.domain = "Others"
 if "domain_answers" not in st.session_state:
     st.session_state.domain_answers = []
 
-# -------------------------- PDF Generation Logic --------------------------
-def create_pdf(score, domain, gen_answers, dom_answers):
+# -------------------------- PDF Logic --------------------------
+def create_pdf(score, domain, gen_ans, dom_ans):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", 'B', 16)
-    pdf.cell(200, 10, txt="Patent Eligibility Report", ln=True, align='C')
-    
-    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="Patent Eligibility Assessment Report", ln=True, align='C')
     pdf.ln(10)
-    pdf.cell(200, 10, txt=f"Overall Probability Score: {score}%", ln=True)
-    pdf.cell(200, 10, txt=f"Selected Domain: {domain}", ln=True)
+    
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(200, 10, txt=f"Overall Result: {score}% Probability", ln=True)
+    pdf.cell(200, 10, txt=f"Invention Domain: {domain}", ln=True)
+    pdf.ln(10)
+    
+    pdf.set_font("Arial", 'B', 11)
+    pdf.cell(200, 10, txt="General Criteria Assessment:", ln=True)
+    pdf.set_font("Arial", size=10)
+    for i, a in enumerate(gen_ans):
+        pdf.multi_cell(0, 8, txt=f"Requirement {i+1}: {a}")
     
     pdf.ln(5)
-    pdf.set_font("Arial", 'B', 12)
-    pdf.cell(200, 10, txt="Section 1: General Criteria", ln=True)
+    pdf.set_font("Arial", 'B', 11)
+    pdf.cell(200, 10, txt=f"{domain} Specific Assessment:", ln=True)
     pdf.set_font("Arial", size=10)
-    for i, ans in enumerate(gen_answers):
-        pdf.multi_cell(0, 8, txt=f"Q{i+1}: {ans}")
-
-    pdf.ln(5)
-    pdf.set_font("Arial", 'B', 12)
-    pdf.cell(200, 10, txt=f"Section 2: {domain} Specifics", ln=True)
-    pdf.set_font("Arial", size=10)
-    for i, ans in enumerate(dom_answers):
-        pdf.multi_cell(0, 8, txt=f"Q{i+1}: {ans}")
+    for i, a in enumerate(dom_ans):
+        pdf.multi_cell(0, 8, txt=f"Domain Check {i+1}: {a}")
         
     return pdf.output(dest='S').encode('latin-1')
 
-# -------------------------- Helpers --------------------------
-def score_block(answers, yes="Yes", neutral=("Maybe / Not Sure", "Not sure")):
-    yes_count = sum(1 for a in answers if a == yes)
-    neutral_count = sum(1 for a in answers if a in neutral)
+# -------------------------- Scoring Helper --------------------------
+def get_score_pct(answers):
+    yes_count = sum(1 for a in answers if a == "Yes")
+    maybe_count = sum(1 for a in answers if a in ["Maybe / Not Sure", "Not sure"])
     total = len(answers)
-    raw = yes_count + 0.5 * neutral_count
-    pct = round(raw / total * 100, 1) if total else 0.0
-    return pct
+    raw = yes_count + (maybe_count * 0.5)
+    return round((raw / total) * 100, 1) if total > 0 else 0
 
-def step_progress(current_step:int):
-    steps = ["General", "Preliminary", "Domain", "Final Result"]
-    cols = st.columns(len(steps))
-    for i, label in enumerate(steps, start=1):
-        with cols[i-1]:
-            if i < current_step: st.markdown(f"✅ **{label}**")
-            elif i == current_step: st.markdown(f"🟣 **{label}**")
-            else: st.markdown(f"▫️ {label}")
+def step_progress(current):
+    steps = ["General", "Prelim", "Domain", "Result"]
+    cols = st.columns(4)
+    for i, label in enumerate(steps, 1):
+        if i < current: cols[i-1].markdown(f"✅ **{label}**")
+        elif i == current: cols[i-1].markdown(f"🟣 **{label}**")
+        else: cols[i-1].markdown(f"▫️ {label}")
 
-# -------------------------- Pages --------------------------
+# -------------------------- Page Functions --------------------------
+
 def page_general():
     step_progress(1)
     st.markdown('<div class="app-card">', unsafe_allow_html=True)
-    st.markdown('<span class="section-chip">Step 1 · Core Requirements</span>', unsafe_allow_html=True)
-    st.markdown("## 💡 Patent Eligibility — General Criteria")
+    st.markdown('<span class="section-chip">Step 1: Core Requirements</span>', unsafe_allow_html=True)
+    st.markdown("## 💡 Essential Patent Criteria")
     
-    # REFINED QUESTIONS
-    questions = [
-        "Is your invention a process, machine, manufacture, or composition of matter (not just a pure idea)?",
-        "Have you confirmed that your invention has not been publicly disclosed or sold before today?",
-        "Does your invention provide a 'technical solution' to a 'technical problem'?",
-        "Does the invention produce a specific, substantial, and credible real-world benefit?",
-        "Is your solution 'non-obvious' to someone with average skill in your specific field?",
-        "Can the invention be described in enough detail that someone else could actually build it?",
-        "Does your invention avoid being a 'mere discovery' of a natural law or mathematical formula?"
+    qs = [
+        "Is this a process, machine, or composition of matter (not just a concept)?",
+        "Has this invention stayed private (no public sales or posts yet)?",
+        "Does your invention solve a specific technical problem?",
+        "Is there a clear, real-world practical use for this invention?",
+        "Would a professional in your field find this solution 'non-obvious'?",
+        "Can you explain it clearly enough for someone else to build it?",
+        "Is this more than just a discovery of a natural law or math formula?"
     ]
-    options = ["Yes", "No", "Maybe / Not Sure"]
     
     answers = []
-    for i, q in enumerate(questions, start=1):
+    for i, q in enumerate(qs, 1):
         st.markdown(f'<div class="qcard q{i}">{q}</div>', unsafe_allow_html=True)
-        ans = st.radio("Selection:", options, key=f"gen_{i}", horizontal=True)
+        ans = st.radio("Your Answer:", ["Yes", "No", "Maybe / Not Sure"], key=f"g_{i}", horizontal=True)
         answers.append(ans)
-
-    if st.button("➡️ See Preliminary Result"):
+    
+    if st.button("Calculate Preliminary Score ➡️", use_container_width=True):
         st.session_state.general_answers = answers
-        st.session_state.page = "preliminary_result"
+        st.session_state.page = "preliminary"
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-def page_preliminary_result():
+def page_preliminary():
     step_progress(2)
     st.markdown('<div class="app-card">', unsafe_allow_html=True)
-    gen_pct = score_block(st.session_state.general_answers)
-    st.metric("General Eligibility Score", f"{gen_pct}%")
-    st.progress(int(gen_pct))
+    score = get_score_pct(st.session_state.general_answers)
+    st.metric("General Eligibility Score", f"{score}%")
+    st.progress(int(score))
     
-    if gen_pct >= 70:
-        st.success("The fundamental legal requirements for a patent look solid.")
+    if score >= 70:
+        st.success("Strong Foundation! Your idea meets the core legal definitions of a patentable invention.")
     else:
-        st.warning("Your idea may face challenges regarding basic patentability (Novelty/Subject Matter).")
+        st.warning("Potential Hurdles: Some core requirements (like novelty or technical character) need more focus.")
         
-    if st.button("🔬 Refine with Domain Questions ➡️"):
+    if st.button("Move to Domain Specific Questions ➡️", use_container_width=True):
         st.session_state.page = "choose_domain"
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-def page_domain_choice():
+def page_choose_domain():
     step_progress(3)
     st.markdown('<div class="app-card">', unsafe_allow_html=True)
-    domain = st.radio("Select Invention Category:", ["Biology", "Chemistry", "Mechanical", "Computer Science", "Others"])
-    if st.button("Next ➡️"):
-        st.session_state.domain = domain
-        st.session_state.page = "domain_questions"
+    st.markdown("## 🌐 Select your Invention Category")
+    dom = st.selectbox("Which field best describes your work?", ["Computer Science", "Mechanical", "Biology", "Chemistry", "Others"])
+    if st.button("Start Domain Quiz ➡️", use_container_width=True):
+        st.session_state.domain = dom
+        st.session_state.page = "domain_qs"
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-# (Note: I've truncated the DOMAIN_QS and domain_specific_flags for brevity, keep your existing logic there)
-DOMAIN_QS = {
-    "Biology": [("Is it modified from its natural state?", "Natural items aren't patentable."), ("Is it reproducible?", "Consistency is key."), ("Does it have industrial use?", "Utility is required."), ("Is there test data?", "Evidence matters."), ("Is it a new strain?", "Novelty.")],
-    "Chemistry": [("Is the compound new?", "Novelty."), ("Better properties?", "Improvement."), ("Industrial use?", "Utility."), ("Can it be synthesized?", "Enablement."), ("Is it stable?", "Practicality.")],
-    "Mechanical": [("New function?", "Improvement."), ("Not just a combo?", "Synergy."), ("Non-obvious?", "Inventive step."), ("Industrial use?", "Utility."), ("Do you have a CAD/model?", "Enablement.")],
-    "Computer Science": [("Technical problem solved?", "Not just business logic."), ("New algorithm?", "Novelty."), ("Hardware improvement?", "Technical effect."), ("Practical application?", "Utility."), ("Avoids abstract math?", "Subject matter.")],
-    "Others": [("Is it new?", "Novelty."), ("Is it useful?", "Utility."), ("Is it non-obvious?", "Inventive step."), ("Reproducible?", "Enablement."), ("Technical advantage?", "Requirement.")]
+DOMAIN_DATA = {
+    "Computer Science": [("Does it improve system speed/security?", "Technical effect."), ("Is it more than just business logic?", "Subject matter.")],
+    "Mechanical": [("Is it a new functional arrangement?", "Novelty."), ("Does it solve a physical friction/energy problem?", "Utility.")],
+    "Biology": [("Is it modified from nature?", "Eligibility."), ("Is the process reproducible?", "Enablement.")],
+    "Chemistry": [("Does it show a new chemical property?", "Novelty."), ("Is there lab data to support it?", "Evidence.")],
+    "Others": [("Is it a new tool or method?", "Novelty."), ("Is it useful in industry?", "Utility.")]
 }
 
-def page_domain_questions():
+def page_domain_qs():
     step_progress(3)
     st.markdown('<div class="app-card">', unsafe_allow_html=True)
     st.markdown(f"## ✍️ {st.session_state.domain} Specifics")
-    qs = DOMAIN_QS[st.session_state.domain]
-    answers = []
-    for idx, (q, hint) in enumerate(qs, start=1):
-        st.markdown(f'<div class="qcard q{(idx % 7) or 7}">{q}</div>', unsafe_allow_html=True)
-        ans = st.radio("Select:", ["Yes", "No", "Not sure"], key=f"dom_{idx}", horizontal=True)
-        answers.append(ans)
     
-    if st.button("Show Final Result ✅"):
+    qs = DOMAIN_DATA.get(st.session_state.domain, DOMAIN_DATA["Others"])
+    answers = []
+    for i, (q, hint) in enumerate(qs, 1):
+        st.markdown(f'<div class="qcard q{i}">{q}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="insight">Note: {hint}</div>', unsafe_allow_html=True)
+        ans = st.radio("Answer:", ["Yes", "No", "Not sure"], key=f"d_{i}", horizontal=True)
+        answers.append(ans)
+        
+    if st.button("Analyze Final Result ✅", use_container_width=True):
         st.session_state.domain_answers = answers
         st.session_state.page = "result"
         st.rerun()
@@ -220,32 +224,58 @@ def page_domain_questions():
 def page_result():
     step_progress(4)
     st.markdown('<div class="app-card">', unsafe_allow_html=True)
-    gen_pct = score_block(st.session_state.general_answers)
-    dom_pct = score_block(st.session_state.domain_answers)
-    final_score = round(gen_pct*0.6 + dom_pct*0.4, 1)
-
-    st.markdown("## 🎯 Final Patentability Snapshot")
-    st.metric("Overall Probability", f"{final_score}%")
+    st.balloons()
     
-    # PDF Generation Section
+    # Calculate Final Scores
+    gen_score = get_score_pct(st.session_state.general_answers)
+    dom_score = get_score_pct(st.session_state.domain_answers)
+    final_score = round((gen_score * 0.6) + (dom_score * 0.4), 1)
+    
+    st.markdown("## 🎉 Congratulations on Your Assessment!")
+    st.success("You've completed the evaluation. Below is your detailed patentability snapshot.")
+    
+    # Score Grid
+    st.markdown("### 📊 Scoring Summary")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Basic Criteria", f"{gen_score}%")
+    c2.metric(f"{st.session_state.domain}", f"{dom_score}%")
+    c3.metric("Overall Match", f"{final_score}%")
+    st.progress(int(final_score))
+    
+    # PDF Export
     st.divider()
-    st.markdown("### 📄 Export Results")
-    pdf_data = create_pdf(final_score, st.session_state.domain, st.session_state.general_answers, st.session_state.domain_answers)
+    st.markdown("### 📄 Save Your Report")
+    pdf_bytes = create_pdf(final_score, st.session_state.domain, st.session_state.general_answers, st.session_state.domain_answers)
     st.download_button(
-        label="Download Result as PDF",
-        data=pdf_data,
-        file_name="Patent_Report.pdf",
-        mime="application/pdf"
+        label="Download Full Results (PDF)",
+        data=pdf_bytes,
+        file_name="Patent_Assessment.pdf",
+        mime="application/pdf",
+        use_container_width=True
     )
     
-    if st.button("🔁 Restart"):
+    # Contact Section
+    st.markdown("---")
+    st.markdown("""
+    <div style="background-color: #f0f7ff; padding: 20px; border-radius: 15px; border: 1px solid #cfe2ff;">
+        <h4 style="margin-top:0;">🤔 Still Not Sure?</h4>
+        <p>Patent eligibility can be nuanced. If your score wasn't what you expected, or if you need professional guidance to file your application, feel free to reach out.</p>
+        <a href="mailto:expert@example.com" style="text-decoration:none;">
+            <button style="width:100%; padding:10px; background-color:#0d6efd; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
+                Contact a Patent Specialist
+            </button>
+        </a>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("🔁 Start New Analysis", use_container_width=True):
         for k in list(st.session_state.keys()): del st.session_state[k]
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Router
+# -------------------------- Router --------------------------
 if st.session_state.page == "general": page_general()
-elif st.session_state.page == "preliminary_result": page_preliminary_result()
-elif st.session_state.page == "choose_domain": page_domain_choice()
-elif st.session_state.page == "domain_questions": page_domain_questions()
+elif st.session_state.page == "preliminary": page_preliminary()
+elif st.session_state.page == "choose_domain": page_choose_domain()
+elif st.session_state.page == "domain_qs": page_domain_qs()
 elif st.session_state.page == "result": page_result()
